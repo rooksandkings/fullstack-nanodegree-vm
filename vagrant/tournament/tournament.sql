@@ -7,3 +7,17 @@
 -- these lines here.
 
 
+CREATE TABLE players 
+(
+playerID serial, 
+name varchar(40), 
+PRIMARY KEY (name)
+); 
+
+CREATE TABLE match_record 
+(
+playerID serial,
+name varchar(40) REFERENCES players(name), 
+wins integer, 
+matches integer
+);

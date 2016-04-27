@@ -6,57 +6,27 @@
 import psycopg2
 import sys
 
-def resetTable(table_name):
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    try:
-        c.execute("DROP TABLE " + table_name)
-        DB.commit()
-        DB.close()
-        print 'Table ' + str(table_name) + ' dropped with no errors'
-    except:
-        DB.close()
-        print "Unexpected error:", sys.exc_info()
-    # print 'dropped'
-
-def createPlayerDB():
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("CREATE TABLE players(playerID serial, name varchar(40), primary key(playerID))")
-    DB.commit()
-    DB.close()
-    print 'Player DB created'
-
-def createMatchesDB():
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("CREATE TABLE match_record(playerID serial, name varchar(40), wins integer, matches integer)")
-    DB.commit()
-    DB.close()
-    # print 'Matches DB created'
-
-def connect():
-    """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
-
 def deleteMatches():
     """Remove all the match records from the database."""
-    '''resetTable('match_record')
-    createMatchesDB()'''
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS players(playerID serial, name varchar(40), PRIMARY KEY (name))")
+    c.execute("CREATE TABLE IF NOT EXISTS match_record(playerID serial, name varchar(40) REFERENCES players(name), wins integer, matches integer)")
     c.execute("UPDATE match_record SET wins = 0")
     c.execute("UPDATE match_record SET matches = 0")
     DB.commit()
     DB.close()
-    # print 'Matches Deleted'
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    resetTable('players')
-    resetTable('match_record')
-    createPlayerDB()
-    createMatchesDB()
+
+    DB = psycopg2.connect("dbname=tournament")
+    c = DB.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS players(playerID serial, name varchar(40), PRIMARY KEY (name))")
+    c.execute("DELETE FROM match_record")
+    c.execute("DELETE FROM players")
+    DB.commit()
+    DB.close()
 
 def countPlayers():
     """Returns the number of players currently registered."""
