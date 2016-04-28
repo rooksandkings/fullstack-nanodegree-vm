@@ -20,7 +20,6 @@ PRIMARY KEY (PlayerID)
 CREATE TABLE match_record 
 (
 playerID serial REFERENCES players(PlayerID),
-name varchar(40), 
 wins integer, 
 matches integer
 );

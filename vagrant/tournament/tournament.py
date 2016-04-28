@@ -30,7 +30,7 @@ def countPlayers():
     c = DB.cursor()
     c.execute("SELECT COUNT(*) FROM players;")    
     DB.close()
-    return c.fetchall()
+    return c.fetchone()[0]
 
 
 def registerPlayer(input_name):
@@ -81,7 +81,6 @@ def reportMatch(winner, loser):
     """
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    #c.execute("CREATE TABLE matches(playerID serial, name varchar(40), wins integer, matches integer)")
     c.execute("UPDATE match_record SET (wins, matches) = (wins + 1, matches + 1) WHERE playerID = (%s)", (winner,))
     c.execute("UPDATE match_record SET matches = (matches + 1) WHERE playerID = (%s)", (loser,))
     DB.commit()
