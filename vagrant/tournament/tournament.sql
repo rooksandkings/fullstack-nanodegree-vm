@@ -14,13 +14,13 @@ CREATE TABLE players
 (
 playerID serial, 
 name varchar(40), 
-PRIMARY KEY (name)
+PRIMARY KEY (PlayerID)
 ); 
 
 CREATE TABLE match_record 
 (
-playerID serial,
-name varchar(40) REFERENCES players(name), 
+playerID serial REFERENCES players(PlayerID),
+name varchar(40), 
 wins integer, 
 matches integer
 );
