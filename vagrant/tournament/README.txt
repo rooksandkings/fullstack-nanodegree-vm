@@ -9,8 +9,9 @@
   Installation
   ------------
 
-  Please run tournament_test.py to test tournament.py 
-  tournament.sql will set the database.
+  To run the application, navigate to the container folder and create the database schema 
+  by typing psql - f tournament.sql, then you can execute the tests module by typing 
+  python testsModule.py on system's command line
 
 
   Contacts

@@ -10,7 +10,10 @@ def deleteMatches():
     """Remove all the match records from the database."""
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("DELETE FROM match_record")
+    c.execute("CREATE TABLE IF NOT EXISTS players(playerID serial, name varchar(40), PRIMARY KEY (name))")
+    c.execute("CREATE TABLE IF NOT EXISTS match_record(playerID serial, name varchar(40) REFERENCES players(name), wins integer, matches integer)")
+    c.execute("UPDATE match_record SET wins = 0")
+    c.execute("UPDATE match_record SET matches = 0")
     DB.commit()
     DB.close()
 
@@ -19,6 +22,7 @@ def deletePlayers():
 
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS players(playerID serial, name varchar(40), PRIMARY KEY (name))")
     c.execute("DELETE FROM match_record")
     c.execute("DELETE FROM players")
     DB.commit()
@@ -28,10 +32,9 @@ def countPlayers():
     """Returns the number of players currently registered."""
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("SELECT COUNT(*) FROM players;")    
+    c.execute("select playerID from players")
+    return len(c.fetchall())
     DB.close()
-    return c.fetchall()
-
 
 def registerPlayer(input_name):
     """Adds a player to the tournament database.
@@ -68,9 +71,8 @@ def playerStandings():
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
     c.execute("SELECT playerID, name, wins, matches FROM match_record ORDER BY wins DESC")
-    DB.close()
     return c.fetchall()
-
+    DB.close()
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -117,6 +119,6 @@ def swissPairings():
         new_tuple = current_list[0] + current_list[1]
         pairs.append(new_tuple)
         pairing_index = pairing_index + 1
-    DB.close()
+  
     return pairs
     
