@@ -6,13 +6,15 @@
 import psycopg2
 import sys
 
+
 def deleteMatches():
     """Remove all the match records from the database."""
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("DELETE FROM match_record")
+    c.execute("UPDATE match_record SET (wins, matches) = (0,0)")
     DB.commit()
     DB.close()
+
 
 def deletePlayers():
     """Remove all the player records from the database."""
@@ -24,12 +26,12 @@ def deletePlayers():
     DB.commit()
     DB.close()
 
+
 def countPlayers():
     """Returns the number of players currently registered."""
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
     c.execute("SELECT COUNT(*) FROM players;")    
-    DB.close()
     return c.fetchone()[0]
 
 
@@ -46,8 +48,10 @@ def registerPlayer(input_name):
 
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("INSERT INTO players (name) VALUES (%s)", (input_name,))
-    c.execute("INSERT INTO match_record (name, wins, matches) VALUES (%s, %s, %s)", (input_name, 0, 0))
+    c.execute("INSERT INTO players (name) VALUES (%s) RETURNING playerID", (input_name,))
+    DB.commit()
+    result = c.fetchall()
+    c.execute("INSERT INTO match_record (playerID, wins, matches) VALUES (%s, %s, %s)", (result[0][0], 0, 0))
     DB.commit()
     DB.close()
 
@@ -67,8 +71,10 @@ def playerStandings():
     """
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("SELECT playerID, name, wins, matches FROM match_record ORDER BY wins DESC")
-    DB.close()
+    query = """SELECT match_record.playerID, players.name, match_record.wins, match_record.matches 
+               FROM players join match_record ON players.playerID = match_record.playerID 
+               ORDER BY match_record.wins DESC"""
+    c.execute(query)
     return c.fetchall()
 
 
@@ -111,7 +117,9 @@ def swissPairings():
     number_of_pairings = len(c.fetchall())/2
 
     while pairing_index < number_of_pairings:
-        c.execute("SELECT playerID, name from match_record ORDER BY wins DESC LIMIT 2 OFFSET %s", (pairing_index * 2,))
+        query = """SELECT match_record.playerID, players.name FROM players join match_record
+                   ON players.playerID = match_record.playerID ORDER BY match_record.wins DESC LIMIT 2 OFFSET %s"""
+        c.execute(query, (pairing_index * 2,))
         current_list = c.fetchall()
         new_tuple = current_list[0] + current_list[1]
         pairs.append(new_tuple)
